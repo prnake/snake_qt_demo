@@ -1,4 +1,5 @@
 #include "snakenode.h"
+
 SnakeNode::SnakeNode(QWidget *parent) : QWidget(parent){}
 
 SnakeNode::SnakeNode(QWidget *parent,int pos){

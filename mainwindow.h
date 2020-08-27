@@ -52,6 +52,7 @@ protected:
     Ui::MainWindow *ui=NULL;
     SnakeList *snake=NULL;
     QTimer* timer=NULL;
+    bool readyToStart=false;
 
 private slots:
     void timeout();

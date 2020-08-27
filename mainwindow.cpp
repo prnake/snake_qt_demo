@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QDebug>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -160,6 +160,27 @@ QPoint MainWindow::randomPos(){
 
 
 void MainWindow::keyPressEvent(QKeyEvent *key){
+    int keyNum;
+    switch(dir){
+    case 1:
+        keyNum = Qt::Key_Up;
+        break;
+    case 2:
+        keyNum = Qt::Key_Down;
+        break;
+    case 3:
+        keyNum = Qt::Key_Left;
+        break;
+    case 4:
+        keyNum = Qt::Key_Right;
+        break;
+    }
+
+    if(readyToStart&&key->key()==keyNum){
+        timer->start(ms);
+        readyToStart = false;
+        return;
+    }
     if(timer==NULL||!timer->isActive()) return;
     switch (key->key()) {
     case Qt::Key_Up:
@@ -287,13 +308,15 @@ void MainWindow::on_actionPlay_triggered()
     ui->lcdNumberTime->display(time);
     ui->lcdNumberScore->display(score);
     if(mouseBarrier!=NULL){delete mouseBarrier;mouseBarrier=NULL;}
+
+    readyToStart = true;
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    timer->start(ms);
 }
 
 void MainWindow::on_actionStop_triggered()
 {
+    readyToStart = false;
     ui->pushButtonLine->setEnabled(false);
     ui->pushButtonStop->setEnabled(false);
     ui->pushButtonContinue->setEnabled(true);
@@ -329,7 +352,7 @@ void MainWindow::on_actionContinue_triggered()
     ui->actionLoad->setEnabled(false);
     ui->actionQuit->setEnabled(true);
     ui->actionPlay->setEnabled(false);
-    timer->start();
+    readyToStart = true;
 }
 
 void MainWindow::on_actionRestart_triggered()
