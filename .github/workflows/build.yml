@@ -71,6 +71,11 @@ jobs:
           asset_path: ./bin/${{ env.targetName }}.dmg
           asset_name: ${{ env.targetName }}.dmg
           asset_content_type: application/applefile
+      - name: uploadArtifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: MacOS
+          path: bin
   buildWin:
     name: Build Windows
     # 运行平台， windows-latest目前是windows server 2019
@@ -130,7 +135,7 @@ jobs:
         if: startsWith(github.event.ref, 'refs/tags/')
         env:
           VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
-          archiveName: ${{ matrix.qt_ver }}-${{ matrix.qt_target }}-${{ matrix.qt_arch }}
+          archiveName: ${env:targetName}-${{ matrix.qt_arch }}
         shell: pwsh
         run: |
           # 创建文件夹
@@ -158,6 +163,11 @@ jobs:
           asset_path: ./${{ env.packageName }}.zip
           asset_name: ${{ env.packageName }}.zip
           asset_content_type: application/zip
+      - name: uploadArtifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: Windows-${{ matrix.qt_arch }}
+          path: bin
   buildAnd:
     name: Build Android
     runs-on: ${{ matrix.os }}
@@ -166,7 +176,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         # 5.9.8 版本低，需要额外设置工具链。这里暂不支持。
-        qt_ver: [5.13.0]
+        qt_ver: [5.12.6]
         qt_target: [android]
         # android_arm64_v8a 暂时不支持. install-qt-action 依赖的aqtinstall版本为0.5*,需要升级
         # qt_arch: [android_x86,android_armv7,android_arm64_v8a]
@@ -194,9 +204,10 @@ jobs:
           export ANDROID_NDK_ROOT=$ANDROID_HOME/ndk-bundle
           qmake
           make
-      - uses: actions/upload-artifact@v2
+      - name: uploadArtifact
+        uses: actions/upload-artifact@v2
         with:
-          name: Andriod
+          name: ${{ matrix.qt_arch }}
           path: bin
   buildIos:
     name: Build IOS
@@ -205,7 +216,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest]
-        qt_ver: [5.13.0]
+        qt_ver: [5.12.6]
         qt_target: [ios]
     steps:
       - name: Install Qt
@@ -223,7 +234,8 @@ jobs:
         run: |
           qmake -r -spec macx-ios-clang CONFIG+=release CONFIG+=iphoneos
           make
-      - uses: actions/upload-artifact@v2
+      - name: uploadArtifact
+        uses: actions/upload-artifact@v2
         with:
           name: Ios
           path: bin
@@ -258,7 +270,8 @@ jobs:
         run: |
           qmake
           make
-      - uses: actions/upload-artifact@v2
+      - name: uploadArtifact
+        uses: actions/upload-artifact@v2
         with:
           name: Linux
           path: bin
