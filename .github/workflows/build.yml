@@ -135,7 +135,7 @@ jobs:
         if: startsWith(github.event.ref, 'refs/tags/')
         env:
           VCINSTALLDIR: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC'
-          archiveName: ${targetName}-${{ matrix.qt_arch }}
+          archiveName: ${{ env.targetName }}-${{ matrix.qt_arch }}
         shell: pwsh
         run: |
           # 创建文件夹
