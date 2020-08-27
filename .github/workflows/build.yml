@@ -237,7 +237,7 @@ jobs:
       - name: uploadArtifact
         uses: actions/upload-artifact@v2
         with:
-          name: Ios
+          name: IOS
           path: bin
   buildLin:
     name: Build Linux
