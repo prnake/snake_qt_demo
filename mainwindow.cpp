@@ -73,7 +73,6 @@ void MainWindow::init(){
     snake = new SnakeList(ui->label);
     food = new SnakeNode(ui->label,randomPos());
 
-    ui->labelScore->setText(QString::number(score));
     resize(800,520);
 }
 
@@ -87,7 +86,7 @@ void MainWindow::timeout()
             delete food;
             food = new SnakeNode(ui->label,randomPos());
             snake -> eat(dir,ui->label);
-            ui->labelScore->setText(QString::number(++score));
+            ui->lcdNumberScore->display(++score);
         }
         QPoint pos;
         pos = snake->body.first()->getPos();
@@ -123,7 +122,7 @@ void MainWindow::timeout()
             ui->actionPlay->setEnabled(false);
         }
     }
-    ui->labelTime->setText(QString::number(++time));
+    ui->lcdNumberTime->display(++time);
 
     if(foodMove){
         int x = food->getPos().x();
@@ -203,7 +202,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
     int x=pos.x(),y=pos.y();
     x = x/10*10;
     y = y/10*10;
-    if(QPoint(x,y)==snake->body.first()->getPos()) return;
+    for(auto node:snake->body){
+        if(QPoint(x,y)==node->getPos()) return;
+    }
+    if(QPoint(x,y)==food->getPos()) return;
     if(mouseBarrier!=NULL){
         delete mouseBarrier;
         mouseBarrier = NULL;
@@ -235,6 +237,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event){
     for(auto node:snake->body){
         if(QPoint(x,y)==node->getPos()) return;
     }
+    if(QPoint(x,y)==food->getPos()) return;
     int b = x*10 + y/10;
     if(barrier.find(b)!=barrier.end()){
         delete barrier[b];
@@ -281,8 +284,8 @@ void MainWindow::on_actionPlay_triggered()
     ui->actionPlay->setEnabled(false);
 
     isChangable = false;
-    time = 0;
-    score = 0;
+    ui->lcdNumberTime->display(time);
+    ui->lcdNumberScore->display(score);
     if(mouseBarrier!=NULL){delete mouseBarrier;mouseBarrier=NULL;}
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
@@ -341,6 +344,10 @@ void MainWindow::on_actionRestart_triggered()
     delete food;
     timer = NULL;
     dir = 1;
+    time = 0;
+    score = 0;
+    ui->lcdNumberTime->display(time);
+    ui->lcdNumberScore->display(score);
     snake = new SnakeList(ui->label);
     food = new SnakeNode(ui->label,randomPos());
     isChangable = true;
@@ -416,6 +423,18 @@ void MainWindow::on_actionLoad_triggered()
                 dir = job["dir"].toInt();
                 predir = job["predir"].toInt();
                 mousePress = job["mousePress"].toInt();
+                ui->Frame->setMouseTracking(bool(mousePress==0));
+                switch (mousePress) {
+                case 0:
+                    ui->pushButtonLine->setText("单个设置");
+                    break;
+                case 1:
+                    ui->pushButtonLine->setText("连续添加");
+                    break;
+                case 2:
+                    ui->pushButtonLine->setText("连续删除");
+                    break;
+                }
                 if(food!=NULL) delete food;
                 food = new SnakeNode(ui->label,job["food"].toInt());
                 isChangable = job["isChangable"].toBool();
@@ -424,8 +443,8 @@ void MainWindow::on_actionLoad_triggered()
                 score = job["score"].toInt();
                 foodMove = job["foodmove"].toBool();
 
-                ui->labelTime->setText(QString::number(time));
-                ui->labelScore->setText(QString::number(score));
+                ui->lcdNumberTime->display(time);
+                ui->lcdNumberScore->display(score);
                 ui->horizontalSlider->setSliderPosition((500-ms)/10);
                 ui->checkBox->setChecked(foodMove);
 
@@ -460,8 +479,8 @@ void MainWindow::on_actionQuit_triggered()
 
 void MainWindow::on_pushButtonLine_clicked()
 {
-    ui->Frame->setMouseTracking(bool(mousePress>0));
     mousePress = (mousePress + 1) % 3;
+    ui->Frame->setMouseTracking(bool(mousePress==0));
     switch (mousePress) {
     case 0:
         ui->pushButtonLine->setText("单个设置");
